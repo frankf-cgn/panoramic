@@ -7,7 +7,7 @@ An [ActionView::Resolver] implementation to store rails views (layouts, template
 Add the following line to Gemfile:
 
 ```
-gem database_templates
+gem "panoramic", "~> 0.0.2"
 ```
 
 ## Usage
@@ -18,6 +18,7 @@ Your model should have the following fields:
 * body (text): the source of template
 * path (string): where to find template (ex: layouts/application,
   you_controller/action, etc...)
+* format (string): mime-type of template (one of Mime::SET.symbols)
 * locale (string): it depends from avaiable locales in your app
 * handler (string): as locale field, it depends from avaiable handlers
   (erb, haml, etc...)
