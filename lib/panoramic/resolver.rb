@@ -5,6 +5,7 @@ module Panoramic
 
     # this method is mandatory to implement a Resolver
     def find_templates(name, prefix, partial, details)
+#      puts "called #{name}, #{prefix}, #{partial}, #{details.inspect}"
       conditions = {
         :path    => build_path(name, prefix),
         :locale  => normalize_array(details[:locale]).first,
@@ -12,6 +13,9 @@ module Panoramic
         :handler => normalize_array(details[:handlers]),
         :partial => partial || false
       }
+      puts "Conditions: #{conditions.inspect}"
+      #TODO: put this in configurable conditional expression
+      conditions.delete(:locale)
 
       @@model.find_model_templates(conditions).map do |record|
         initialize_template(record)
