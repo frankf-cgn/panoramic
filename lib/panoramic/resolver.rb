@@ -5,10 +5,11 @@ module Panoramic
 
     # this method is mandatory to implement a Resolver
     def find_templates(name, prefix, partial, details)
-#      puts "called #{name}, #{prefix}, #{partial}, #{details.inspect}"
+      return [] if @@resolver_options[:only] && !@@resolver_options[:only].include?(prefix)
+
       conditions = {
         :path    => build_path(name, prefix),
-        :locale  => normalize_array(details[:locale]).first,
+        :locale  => [normalize_array(details[:locale]).first, nil],
         :format  => normalize_array(details[:formats]).first,
         :handler => normalize_array(details[:handlers]),
         :partial => partial || false
@@ -23,8 +24,9 @@ module Panoramic
     end
 
     # Instantiate Resolver by passing a model (decoupled from ORMs)
-    def self.using(model)
+    def self.using(model, options={})
       @@model = model
+      @@resolver_options = options
       self.instance
     end
 
@@ -54,7 +56,7 @@ module Panoramic
     def normalize_array(array)
       array.map(&:to_s)
     end
-    
+
     # returns a path depending if its a partial or template
     def virtual_path(path, partial)
       return path unless partial

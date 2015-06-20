@@ -1,13 +1,13 @@
-# Panoramic
+# Panoramic [![Build Status](https://secure.travis-ci.org/apeacox/panoramic.png)](http://travis-ci.org/apeacox/panoramic)
 An [ActionView::Resolver] implementation to store rails views (layouts, templates and partials) on database. Simply put: what you can do with views on filesystem, can be done on database.
 
-**NOTE:** at the moment, only ActiveRecord is supported, I've planned to add more ORMs (see Todo). If you can't wait, adding other ORMs should be very trivial. 
+**NOTE:** at the moment, only ActiveRecord is supported, I've planned to add more ORMs (see Todo). If you can't wait, adding other ORMs should be very trivial.
 
 ## Installation
 Add the following line to Gemfile:
 
-```
-gem "panoramic", "~> 0.0.2"
+```ruby
+gem "panoramic"
 ```
 
 ## Usage
@@ -18,25 +18,25 @@ Your model should have the following fields:
 * body (text): the source of template
 * path (string): where to find template (ex: layouts/application,
   you_controller/action, etc...)
-* format (string): mime-type of template (one of Mime::SET.symbols)
-* locale (string): it depends from avaiable locales in your app
+* locale (string): it depends from available locales in your app
 * handler (string): as locale field, it depends from avaiable handlers
   (erb, haml, etc...)
 * partial (boolean): determines if it's a partial or not (false by
   default)
+* format (string): A valid mimetype from Mime::SET.symbols
 
 they're what the rails' Resolver API needs to lookup templates.
 
 ### Model
 A simple macro in model will activate your new Resolver. You can use a dedicated model to manage all the views in your app, or just for specific needs (ex: you want a custom template for some static pages, the other views will be fetched from filesystem).
 
-```
+```ruby
 class TemplateStorage < ActiveRecord::Base
   store_templates
 end
 ```
 
-### Controller 
+### Controller
 To add Panoramic::Resolver in controller, depending on your needs, you may choose:
 
 * [prepend_view_path]: search for templates *first* in your resolver, *then* on filesystem
@@ -45,7 +45,7 @@ To add Panoramic::Resolver in controller, depending on your needs, you may choos
 **NOTE**: the above methods are both class and instance methods.
 
 
-```
+```ruby
 class SomeController < ApplicationController
   prepend_view_path TemplateStorage.resolver
 
@@ -57,13 +57,26 @@ class SomeController < ApplicationController
     # explicit render
     render :template => 'custom_template'
   end
-  
+
   def custom_template
     # use another model to fetch templates
     prepend_view_path AnotherModel.resolver
   end
 end
 ```
+
+And let's say you want to use database template resolving in all your controllers, but
+want to use panoramic only for certain paths (prefixed with X) you can use
+
+```ruby
+class ApplicationController < ActionController::Base
+  prepend_view_path TemplateStorage.resolver(:only => 'use_this_prefix_only')
+end
+```
+
+This helps reducing the number of database requests, if Rails for example tries to look
+for layouts per controller.
+
 
 ## Documentation
 Need more help? Check out ```spec/dummy/```, you'll find a *dummy* rails app I used to make tests ;-)

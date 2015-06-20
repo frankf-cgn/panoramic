@@ -4,9 +4,26 @@ describe Panoramic::Resolver do
   let(:resolver) { Panoramic::Resolver.using(DatabaseTemplate) }
 
   context ".find_templates" do
-    it "lookups templates for given params" do
-      template = Factory.create(:database_template, :path => 'foo/example')
+    it "should lookup templates for given params" do
+      template = FactoryGirl.create(:database_template, :path => 'foo/example')
       details = { :formats => [:html], :locale => [:en], :handlers => [:erb] }
+      resolver.find_templates('example', 'foo', false, details).first.should_not be_nil
+    end
+
+    it "should lookup locale agnostic templates for given params" do
+      template = FactoryGirl.create(:database_template, :path => 'foo/example', :locale => nil)
+      details = { :formats => [:html], :locale => [:en], :handlers => [:erb] }
+      resolver.find_templates('example', 'foo', false, details).first.should_not be_nil
+    end
+
+    it "should lookup templates for given params and prefixes" do
+      resolver = Panoramic::Resolver.using(DatabaseTemplate, :only => 'foo')
+      details = { :formats => [:html], :locale => [:en], :handlers => [:erb] }
+
+      template = FactoryGirl.create(:database_template, :path => 'bar/example')
+      resolver.find_templates('example', 'bar', false, details).first.should be_nil
+
+      template = FactoryGirl.create(:database_template, :path => 'foo/example')
       resolver.find_templates('example', 'foo', false, details).first.should_not be_nil
     end
   end
@@ -32,7 +49,7 @@ describe_private Panoramic::Resolver, '(private methods)' do
   end
 
   context "#initialize_template" do
-    let(:template) { Factory :database_template }
+    let(:template) { FactoryGirl.create :database_template }
 
     it "initializes an ActionView::Template object" do
       resolver.initialize_template(template).should be_a(ActionView::Template)
